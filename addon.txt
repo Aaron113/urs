@@ -1,0 +1,6 @@
+"AddonInfo"
+{
+	"name" "URS"
+	"author_name" "xAaron113x"
+	"info" "Restriction system for ULX."
+}
