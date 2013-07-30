@@ -6,7 +6,7 @@ restrictions = {}
 limits = {}
 loadouts = {}
 
-local shoulddebug = true
+local shoulddebug = false
 local function Debug( msg ) if shoulddebug then ULib.console( nil, "[URS DEBUG] ".. msg ) Msg( "[URS DEBUG] ".. msg .."\n" ) end end
 
 if file.Exists( "ulx/limits.txt", "DATA" ) then limits = util.JSONToTable( file.Read( "ulx/limits.txt", "DATA" ) ) end
@@ -55,16 +55,27 @@ function URSCheck( ply, type, what, noecho )
 	end
 end
 
-function URSDupeCheck( Player, Ent, EntTable )
-	return URSCheck( Player, "advdupe", EntTable.Class )
-end
-function URSDupeCheckFailed( Hook )
-	ULib.tsayColor( nil, false, Color( 255, 0, 0 ), "URSDupeCheck has failed.  Please contact Aaron113 @\nhttp://forums.ulyssesmod.net/index.php/topic,5269.0.html" )
-end
+timer.Simple(0.1, function() 
 
-if AdvDupe then 
-	timer.Simple( 0.1, function() AdvDupe.AdminSettings.AddEntCheckHook( "URSDupeCheck", URSDupeCheck, URSDupeCheckFailed ) end )
-end
+	--  Wiremod's Advanced Duplicator
+	if AdvDupe then 
+		AdvDupe.AdminSettings.AddEntCheckHook( "URSDupeCheck", function(ply, Ent, EntTable) 
+			return URSCheck( ply, "advdupe", EntTable.Class )
+		end, function(Hook) 
+			ULib.tsayColor( nil, false, Color( 255, 0, 0 ), "URSDupeCheck has failed.  Please contact Aaron113 @\nhttp://forums.ulyssesmod.net/index.php/topic,5269.0.html" )
+		end )
+	end
+
+	-- Advanced Duplicator 2 (http://facepunch.com/showthread.php?t=1136597)
+	if AdvDupe2 then 
+		hook.Add("PlayerSpawnEntity", "URSCheckRestrictedEntity", function(ply, EntTable) 
+			if URSCheck(ply, "advdupe", EntTable.Class) == false or URSCheck(ply, "advdupe", EntTable.Model) == false then 
+				return false 
+			end 
+		end) 
+	end 
+
+end )
 
 function URSCheckRestrictedSENT( ply, sent )
 	return URSCheck( ply, "sent", sent )
