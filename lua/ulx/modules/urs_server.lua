@@ -25,15 +25,23 @@ end
 function URSCheck( ply, type, what, noecho )
 	what = string.lower( what )
 	local group = ply:GetUserGroup() 
-	if restrictions[type][what] and (table.HasValue(restrictions[type][what], group) or table.HasValue(restrictions[type][what], "*") or table.HasValue(restrictions[type][what], ply:SteamID())) then
-		if !table.HasValue(restrictions[type][what], "*") and (!table.HasValue( restrictions[type][what], ply:SteamID()) and table.HasValue(restrictions[type][what], group)) then
+	if restrictions[type][what] then
+		if table.HasValue(restrictions[type][what], "*") then
+			if !(table.HasValue(restrictions[type][what], group) or table.HasValue(restrictions[type][what], ply:SteamID())) then
+				if !noecho then
+					ulx.logSpawn( ply:Nick() .."<".. ply:SteamID() .."> spawned/used ".. type .." ".. what .." -=RESTRICTED=-" )
+					ULib.tsayError( ply, "\"".. what .."\" is a restricted ".. type .." from your rank." )
+				end
+				return false
+			end
+		elseif (table.HasValue( restrictions[type][what], ply:SteamID()) and table.HasValue(restrictions[type][what], group)) then 
 			if !noecho then
 				ulx.logSpawn( ply:Nick() .."<".. ply:SteamID() .."> spawned/used ".. type .." ".. what .." -=RESTRICTED=-" )
 				ULib.tsayError( ply, "\"".. what .."\" is a restricted ".. type .." from your rank." )
 			end
 			return false
 		end
-	elseif restrictions["all"][type] and table.HasValue(restrictions["all"][type], group) then
+	elseif (restrictions["all"][type] and table.HasValue(restrictions["all"][type], group)) then
 		if !noecho then
 			ULib.tsayError( ply, "Your rank is restricted from all ".. type .."s" )
 		end
