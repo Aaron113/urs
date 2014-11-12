@@ -34,7 +34,7 @@ function URSCheck( ply, type, what, noecho )
 				end
 				return false
 			end
-		elseif (table.HasValue( restrictions[type][what], ply:SteamID()) and table.HasValue(restrictions[type][what], group)) then 
+		elseif (table.HasValue(restrictions[type][what], group) or table.HasValue( restrictions[type][what], ply:SteamID())) then 
 			if !noecho then
 				ulx.logSpawn( ply:Nick() .."<".. ply:SteamID() .."> spawned/used ".. type .." ".. what .." -=RESTRICTED=-" )
 				ULib.tsayError( ply, "\"".. what .."\" is a restricted ".. type .." from your rank." )
