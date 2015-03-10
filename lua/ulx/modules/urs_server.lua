@@ -63,6 +63,7 @@ function URS.Check(ply, type, what)
 				return false 
 			end 
 		end 
+		return true -- Overwrite sbox limit (ours is greater)
 	end 
 end
 
