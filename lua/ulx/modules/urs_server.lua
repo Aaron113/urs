@@ -56,9 +56,6 @@ function URSCheck( ply, type, what, noecho )
 	elseif table.HasValue( limittypes, type ) and limits[type][group] then
 		if ply:GetCount( type .."s" ) >= limits[type][group] then
 			ply:LimitHit( type .."s" )
-			return false
-		else
-			return true
 		end
 	end
 end
