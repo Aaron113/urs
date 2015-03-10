@@ -1,13 +1,12 @@
 AddCSLuaFile( "ulx/modules/sh/urs_cmds.lua" )
-local Pickups = ulx.convar( "urs_weaponpickups", 0 )
+
+local cfgPickup = ulx.convar( "urs_weaponpickups", 0 )
 local restrictiontypes = { "tool","vehicle","effect","swep", "npc","ragdoll","prop","sent", "all", "advdupe", "pickup" }
 local limittypes = { "vehicle","effect", "npc","ragdoll","prop","sent" }
+
 restrictions = {}
 limits = {}
 loadouts = {}
-
-local shoulddebug = false
-local function Debug( msg ) if shoulddebug then ULib.console( nil, "[URS DEBUG] ".. msg ) Msg( "[URS DEBUG] ".. msg .."\n" ) end end
 
 if file.Exists( "ulx/limits.txt", "DATA" ) then limits = util.JSONToTable( file.Read( "ulx/limits.txt", "DATA" ) ) end
 if file.Exists( "ulx/restrictions.txt", "DATA" ) then restrictions = util.JSONToTable( file.Read( "ulx/restrictions.txt", "DATA" ) ) end
@@ -123,10 +122,14 @@ hook.Add( "PlayerSpawnSWEP", "URSCheckRestrictedSWEP", URSCheckRestrictedSWEP, -
 hook.Add( "PlayerGiveSWEP", "URSCheckRestrictedSWEP2", URSCheckRestrictedSWEP, -10 )
 
 function URSCheckRestrictedPickUp( ply, weapon )
-	if Pickups:GetInt() == 2 then
-		return URSCheck( ply, "pickup", weapon:GetClass(), true )
-	elseif Pickups:GetInt() == 1 then
-		return URSCheck( ply, "swep", weapon:GetClass(), true )
+	if cfgPickup:GetInt() == 2 then
+		if !URSCheck( ply, "pickup", weapon:GetClass(), true ) then 
+			return false 
+		end 
+	elseif cfgPickup:GetInt() == 1 then
+		if !URSCheck( ply, "swep", weapon:GetClass(), true ) then 
+			return false 
+		end 
 	end
 end
 hook.Add( "PlayerCanPickupWeapon", "URSCheckRestrictedPickUp", URSCheckRestrictedPickUp, -10 )

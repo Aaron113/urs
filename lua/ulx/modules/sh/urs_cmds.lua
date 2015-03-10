@@ -1,6 +1,7 @@
 local restrictiontypes = { "tool","vehicle","effect","swep", "npc","ragdoll","prop","sent", "all", "advdupe", "pickup" }
 local limittypes = { "vehicle","effect", "npc","ragdoll","prop","sent" }
 local Echo
+
 if SERVER then
 	Echo = ulx.convar( "echours", 0 )
 	util.AddNetworkString("URS-Loadouts")
