@@ -62,8 +62,6 @@ function URS.Check(ply, type, what)
 				ply:LimitHit( type .."s" )
 				return false 
 			end 
-		else 
-			return true -- return true to overwrite existing sbox limits
 		end 
 	end 
 end
