@@ -1,5 +1,10 @@
 AddCSLuaFile( "ulx/modules/sh/urs_cmds.lua" )
 
+SAVE_ALL = 0
+SAVE_RESTRICIONS = 1 
+SAVE_LIMITS = 2 
+SAVE_LOADOUTS = 3
+
 if !URS then URS = {} end 
 
 function URS.Load() 
@@ -18,10 +23,10 @@ function URS.Load()
 	end 
 end
 
-function URS.Save()
-	if URS.restrictions then file.Write("ulx/restrictions.txt", util.TableToJSON(URS.restrictions)) end
-	if URS.limits then file.Write("ulx/limits.txt", util.TableToJSON(URS.limits)) end
-	if URS.loadouts then file.Write("ulx/loadouts.txt", util.TableToJSON(URS.loadouts)) end
+function URS.Save(n)
+	if (n == SAVE_ALL or n == SAVE_RESTRICTIONS) 	and URS.restrictions then file.Write("ulx/restrictions.txt", util.TableToJSON(URS.restrictions)) end
+	if (n == SAVE_ALL or n == SAVE_LIMITS) 			and URS.limits then file.Write("ulx/limits.txt", util.TableToJSON(URS.limits)) end
+	if (n == SAVE_ALL or n == SAVE_LOADOUTS) 		and URS.loadouts then file.Write("ulx/loadouts.txt", util.TableToJSON(URS.loadouts)) end
 end
 
 function URS.PrintRestricted(ply, type, what) 
