@@ -1,13 +1,24 @@
-local restrictiontypes = { "tool","vehicle","effect","swep", "npc","ragdoll","prop","sent", "all", "advdupe", "pickup" }
-local limittypes = { "vehicle","effect", "npc","ragdoll","prop","sent" }
-local Echo
+if !URS then URS = {} end 
 
-if SERVER then
-	Echo = ulx.convar( "echours", 0 )
-	util.AddNetworkString("URS-Loadouts")
-	util.AddNetworkString("URS-Restrictions")
-	util.AddNetworkString("URS-All")
-end
+URS.types = {} 
+URS.types.restrictions = {"tool","vehicle","effect","swep", "npc","ragdoll","prop","sent", "all", "advdupe", "pickup"}
+URS.types.limits = {"vehicle","effect", "npc","ragdoll","prop","sent"}
+
+URS.restrictions = {}
+URS.limits = {}
+URS.loadouts = {}
+
+URS.cfg = {}
+URS.cfg.WeaponPickups = 0
+URS.cfg.EchoSpawns = 0
+
+if SERVER then 
+	URS.cfg.WeaponPickups = ulx.convar("urs_weaponpickups", 0)
+	URS.cfg.EchoSpawns = ulx.convar( "echours", 0 )
+
+	URS.Load()
+end 
+
 
 function ulx.restrict( ply, type, what, ... )
 	local groups = {...}
@@ -17,32 +28,32 @@ function ulx.restrict( ply, type, what, ... )
 		ULib.tsayError( ply, "Global Restrictions are limited to:\ntool, vehicle, effect, swep, npc, ragdoll, prop, sent " )
 		return
 	end
-	if !restrictions[type][what] then
-		restrictions[type][what] = groups
+	if !URS.restrictions[type][what] then
+		URS.restrictions[type][what] = groups
 	else
 		for group, groups in pairs( groups ) do
-			if table.HasValue( restrictions[type][what], groups ) then
+			if table.HasValue( URS.restrictions[type][what], groups ) then
 				table.insert( removers, group )
 				ULib.tsayError( ply, groups .." is already restricted from this rank." )
 			else
 				if groups == "*" then
-					table.insert( restrictions[type][what], 1, groups )
+					table.insert( URS.restrictions[type][what], 1, groups )
 				else
-					table.insert( restrictions[type][what], groups )
+					table.insert( URS.restrictions[type][what], groups )
 				end
 			end
 		end
 	end
 	xgui.sendDataTable( {}, "URSRestrictions" )
-	URSSave()
+	URS.Save()
 	table.sort( removers, function(a, b) return a > b end )
 	if removers[1] then for num, nums in pairs( removers ) do table.remove( groups, nums ) end end
 	if groups[1] then
-		ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A restricted #s #s from #s", type, what, table.concat( groups, ", " ) )
+		ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A restricted #s #s from #s", type, what, table.concat( groups, ", " ) )
 	end
 end
 local restrict = ulx.command( "URS", "ulx restrict", ulx.restrict, "!restrict" )
-restrict:addParam{ type=ULib.cmds.StringArg, hint="Type", completes=restrictiontypes, ULib.cmds.restrictToCompletes }
+restrict:addParam{ type=ULib.cmds.StringArg, hint="Type", completes=URS.types.restrictions, ULib.cmds.restrictToCompletes }
 restrict:addParam{ type=ULib.cmds.StringArg, hint="Target Name/Model Path" }
 restrict:addParam{ type=ULib.cmds.StringArg, hint="Groups", ULib.cmds.takeRestOfLine, repeat_min=1 }
 restrict:defaultAccess( ULib.ACCESS_SUPERADMIN )
@@ -53,24 +64,24 @@ function ulx.unrestrict( ply, type, what, ... )
 	local removers = {}
 	local removers2 = {}
 	what = string.lower( what )
-	if not restrictions[type][what] then ULib.tsayError( ply, what .." is not a restricted ".. type ) return
+	if not URS.restrictions[type][what] then ULib.tsayError( ply, what .." is not a restricted ".. type ) return
 	elseif groups[1] == "*" then
-		if restrictions[type][what][1] == "*" then
-			if not restrictions[type][what][2] then
-				restrictions[type][what] = nil
+		if URS.restrictions[type][what][1] == "*" then
+			if not URS.restrictions[type][what][2] then
+				URS.restrictions[type][what] = nil
 			else
-				table.remove( restrictions[type][what], 1 )
+				table.remove( URS.restrictions[type][what], 1 )
 			end
 		else
-			restrictions[type][what] = nil
+			URS.restrictions[type][what] = nil
 		end
 	else
 		for k,v in pairs( groups ) do
-			if table.HasValue( restrictions[type][what], v ) then
-				for k2,v2 in pairs( restrictions[type][what] ) do
+			if table.HasValue( URS.restrictions[type][what], v ) then
+				for k2,v2 in pairs( URS.restrictions[type][what] ) do
 					if v2 == v then
 						table.insert( removers, k2 )
-						if not restrictions[type][what][1] then restrictions[type][what] = nil end
+						if not URS.restrictions[type][what][1] then URS.restrictions[type][what] = nil end
 					end
 				end
 			else
@@ -80,34 +91,34 @@ function ulx.unrestrict( ply, type, what, ... )
 		end
 	end
 	table.sort( removers, function(a, b) return a > b end )
-	for i=1,#removers do table.remove( restrictions[type][what], removers[i] ) end
-	URSSave()
+	for i=1,#removers do table.remove( URS.restrictions[type][what], removers[i] ) end
+	URS.Save()
 	xgui.sendDataTable( {}, "URSRestrictions" )
 	if groups[1] then
 		table.sort( removers2, function(a, b) return a > b end )
 		for i=1,#removers2 do table.remove( groups, removers2[i] ) end
-		if groups[1] == "*" and not restrictions[type][what] then
-			ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A removed all restrictions from #s", what )
+		if groups[1] == "*" and not URS.restrictions[type][what] then
+			ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A removed all restrictions from #s", what )
 		else
-			ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A unrestricted #s from #s", what, table.concat(groups,", ") )
+			ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A unrestricted #s from #s", what, table.concat(groups,", ") )
 		end
 	end
 end
 local unrestrict = ulx.command( "URS", "ulx unrestrict", ulx.unrestrict, "!unrestrict")
-unrestrict:addParam{ type=ULib.cmds.StringArg, hint="Type", completes=restrictiontypes, ULib.cmds.restrictToCompletes }
+unrestrict:addParam{ type=ULib.cmds.StringArg, hint="Type", completes=URS.types.restrictions, ULib.cmds.restrictToCompletes }
 unrestrict:addParam{ type=ULib.cmds.StringArg, hint="Target Name/Model Path" }
 unrestrict:addParam{ type=ULib.cmds.StringArg, hint="Groups", ULib.cmds.takeRestOfLine, repeat_min=1 }
 unrestrict:defaultAccess( ULib.ACCESS_SUPERADMIN )
 unrestrict:help( "Remove a restrictions from a group." )
 
 function ulx.setlimit( ply, type, group, limit )
-	if limit == -1 then limits[type][group] = nil else limits[type][group] = limit end
+	if limit == -1 then URS.limits[type][group] = nil else URS.limits[type][group] = limit end
 	xgui.sendDataTable( {}, "URSLimits" )
-	URSSave()
-	ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A set the #s limit for #s to #i", type, group, limit )
+	URS.Save()
+	ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A set the #s limit for #s to #i", type, group, limit )
 end
 local limit = ulx.command( "URS", "ulx setlimit", ulx.setlimit, "!setlimit" )
-limit:addParam{ type=ULib.cmds.StringArg, ULib.cmds.restrictToCompletes, completes=limittypes, hint="Type" }
+limit:addParam{ type=ULib.cmds.StringArg, ULib.cmds.restrictToCompletes, completes=URS.types.limits, hint="Type" }
 limit:addParam{ type=ULib.cmds.StringArg, hint="Group" }
 limit:addParam{ type=ULib.cmds.NumArg, min=-1, default=-1, hint="Amount (-1 is default)" }
 limit:defaultAccess( ULib.ACCESS_SUPERADMIN )
@@ -119,22 +130,22 @@ function ulx.loadoutadd( ply, group, ... )
 	local weapons = {...}
 	local removers = {}
 	for i=1, #weapons do
-		if loadouts[group] and not table.HasValue( loadouts[group], weapons[i] ) then
-			table.insert( loadouts[group], weapons[i] )
-		elseif loadouts[group] and table.HasValue( loadouts[group], weapons[i] ) then
+		if URS.loadouts[group] and not table.HasValue( URS.loadouts[group], weapons[i] ) then
+			table.insert( URS.loadouts[group], weapons[i] )
+		elseif URS.loadouts[group] and table.HasValue( URS.loadouts[group], weapons[i] ) then
 			ULib.tsayError( ply, weapons[i] .." is already in the loadout for ".. group )
 			table.insert( removers, i )
 		end
 	end
-	if not loadouts[group] then
-		loadouts[group] = weapons
+	if not URS.loadouts[group] then
+		URS.loadouts[group] = weapons
 	end
-	URSSave()
+	URS.Save()
 	xgui.sendDataTable( {}, "URSLoadouts" )
 	table.sort( removers, function(a, b) return a > b end )
 	for i=1,#removers do table.remove( weapons, removers[i] ) end
 	if weapons[1] then
-		ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A added #s to the loadout for #s", table.concat( weapons, ", " ), group )
+		ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A added #s to the loadout for #s", table.concat( weapons, ", " ), group )
 	end
 end
 local loadout = ulx.command( "URS", "ulx loadoutadd", ulx.loadoutadd, "!loadoutadd" )
@@ -144,21 +155,21 @@ loadout:defaultAccess( ULib.ACCESS_SUPERADMIN )
 loadout:help( "Create or update a loudout for a specific group." )
 
 function ulx.loadoutremove( ply, group, ... )
-	if not loadouts[group] then ULib.tsayError( ply, group .." does not have a loadout" ) return end
+	if not URS.loadouts[group] then ULib.tsayError( ply, group .." does not have a loadout" ) return end
 	local weapons = {...}
 	local removers = {}
 	local removers2 = {}
 	if weapons[1] == "*" then
-		loadouts[group] = nil
+		URS.loadouts[group] = nil
 		weapons = {}
-		URSSave()
+		URS.Save()
 		xgui.sendDataTable( {}, "URSLoadouts" )
-		ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A removed the loadout from #s", group )
+		ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A removed the loadout from #s", group )
 		return
 	else
 		for k,v in pairs( weapons ) do
-			if table.HasValue( loadouts[group], v ) then
-				for k2,v2 in pairs( loadouts[group] ) do
+			if table.HasValue( URS.loadouts[group], v ) then
+				for k2,v2 in pairs( URS.loadouts[group] ) do
 					if v2 == v then
 						table.insert( removers, k2 )
 					end
@@ -170,43 +181,17 @@ function ulx.loadoutremove( ply, group, ... )
 		end
 	end
 	table.sort( removers, function(a, b) return a > b end )
-	for i=1,#removers do table.remove( loadouts[group], removers[i] ) end
-	if not loadouts[group][1] then loadouts[group] = nil end
-	URSSave()
+	for i=1,#removers do table.remove( URS.loadouts[group], removers[i] ) end
+	if not URS.loadouts[group][1] then URS.loadouts[group] = nil end
+	URS.Save()
 	xgui.sendDataTable( {}, "URSLoadouts" )
 	table.sort( removers2, function(a, b) return a > b end )
 	for i=1,#removers2 do table.remove( weapons, removers2[i] ) end
 	if weapons and not weapons[1] then return end
-	ulx.fancyLogAdmin( ply, Echo:GetBool(), "#A removed #s from the loadout of #s", table.concat( weapons, ", " ), group )
+	ulx.fancyLogAdmin( ply, URS.cfg.EchoSpawns:GetBool(), "#A removed #s from the loadout of #s", table.concat( weapons, ", " ), group )
 end
 local loadout = ulx.command( "URS", "ulx loadoutremove", ulx.loadoutremove, "!loadoutremove" )
 loadout:addParam{ type=ULib.cmds.StringArg, hint="Group" }
 loadout:addParam{ type=ULib.cmds.StringArg, hint="Weapons", ULib.cmds.takeRestOfLine, repeat_min=1 }
 loadout:defaultAccess( ULib.ACCESS_SUPERADMIN )
 loadout:help( "Remove weapons from a loadout for a specific group." )
-
-function ulx.print( ply, type )
-	if type == "loadouts" then
-		net.Start("URS-Loadouts")
-		net.WriteTable(loadouts)
-		net.Send(ply)
-	elseif type == "restrictions" then
-		net.Start("URS-Restrictions")
-		net.WriteTable(restrictions)
-		net.Send(ply)
-	elseif type == "limits" then
-		net.Start("URS-Limits")
-		net.WriteTable(limits)
-		net.Send(ply)
-	else
-		net.Start("URS-All")
-		net.WriteTable(limits)
-		net.WriteTable(restrictions)
-		net.WriteTable(loadouts)
-		net.Send(ply)
-	end
-end
-local loadout = ulx.command( "URS", "ulx print", ulx.print, "!print" )
-loadout:addParam{ type=ULib.cmds.StringArg, hint="Type", completes={"restrictions","loadouts","limits","all" }, ULib.cmds.restrictToCompletes }
-loadout:defaultAccess( ULib.ACCESS_SUPERADMIN )
-loadout:help( "Print Restrictions, Loadouts, or Limits from URS into your console." )
