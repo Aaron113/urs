@@ -1,6 +1,6 @@
 AddCSLuaFile( "ulx/modules/sh/urs_cmds.lua" )
 
-URS = {}
+if !URS then URS = {} end 
 
 function URS.Load() 
 	if file.Exists( "ulx/restrictions.txt", "DATA" ) then URS.restrictions = util.JSONToTable( file.Read( "ulx/restrictions.txt", "DATA" ) ) end
@@ -25,10 +25,10 @@ function URS.Save()
 end
 
 function URS.PrintRestricted(ply, type, what) 
-	if !URS.cfg.noEcho then 
+	if URS.cfg.echoSpawns then 
 		ulx.logSpawn(ply:Nick() .."<".. ply:SteamID() .."> spawned/used ".. type .." ".. what .." -=RESTRICTED=-")
-		ULib.tsayError(ply, "\"".. what .."\" is a restricted ".. type .." from your rank.")
 	end 
+	ULib.tsayError(ply, "\"".. what .."\" is a restricted ".. type .." from your rank.")
 end 
 
 function URS.Check(ply, type, what)
@@ -48,9 +48,7 @@ function URS.Check(ply, type, what)
 		end 
 
 	elseif URS.restrictions["all"][type] and table.HasValue(URS.restrictions["all"][type], group) then 
-		if !URS.cfg.noEcho then 
-			ULib.tsayError(ply, "Your rank is restricted from all ".. type .."s") 
-		end 
+		ULib.tsayError(ply, "Your rank is restricted from all ".. type .."s") 
 		return false 
 
 	elseif table.HasValue(URS.types.limits, type) and (URS.limits[type][ply:SteamID()] or URS.limits[type][group]) then 
@@ -65,7 +63,7 @@ function URS.Check(ply, type, what)
 				return false 
 			end 
 		else 
-			return true 
+			return true -- return true to overwrite existing sbox limits
 		end 
 	end 
 end
@@ -105,8 +103,8 @@ end
 hook.Add( "PlayerSpawnProp", "URSCheckRestrictedProp", URS.CheckRestrictedProp, -10 )
 
 function URS.CheckRestrictedTool(ply, tr, tool)
-	if URS.Check( ply, "tool", tool ) == false then return false end
-	if tool != "inflator" then
+	if !URS.Check( ply, "tool", tool ) then return false end
+	if URS.cfg.echoSpawns and tool != "inflator" then
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> used the tool ".. tool .." on ".. tr.Entity:GetModel() )
 	end
 end
@@ -128,18 +126,20 @@ end
 hook.Add( "PlayerSpawnRagdoll", "URSCheckRestrictedRagdoll", URS.CheckRestrictedRagdoll, -10 )
 
 function URS.CheckRestrictedSWEP(ply, class, weapon)
-	if URS.Check( ply, "swep", class ) == false then return false end
-	ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave himself swep ".. class )
+	if !URS.Check( ply, "swep", class ) then return false end
+	if URS.cfg.echoSpawns then 
+		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave himself swep ".. class ) 
+	end 
 end
 hook.Add( "PlayerSpawnSWEP", "URSCheckRestrictedSWEP", URS.CheckRestrictedSWEP, -10 )
 hook.Add( "PlayerGiveSWEP", "URSCheckRestrictedSWEP2", URS.CheckRestrictedSWEP, -10 )
 
 function URS.CheckRestrictedPickUp(ply, weapon)
-	if URS.cfg.WeaponPickups:GetInt() == 2 then
+	if URS.cfg.weaponPickups:GetInt() == 2 then
 		if !URS.Check( ply, "pickup", weapon:GetClass()) then 
 			return false 
 		end 
-	elseif URS.cfg.WeaponPickups:GetInt() == 1 then
+	elseif URS.cfg.weaponPickups:GetInt() == 1 then
 		if !URS.Check( ply, "swep", weapon:GetClass()) then 
 			return false 
 		end 
