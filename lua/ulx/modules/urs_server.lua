@@ -1,10 +1,5 @@
 AddCSLuaFile( "ulx/modules/sh/urs_cmds.lua" )
 
-SAVE_ALL = 0
-SAVE_RESTRICIONS = 1 
-SAVE_LIMITS = 2 
-SAVE_LOADOUTS = 3
-
 if !URS then URS = {} end 
 
 function URS.Load() 
@@ -22,6 +17,11 @@ function URS.Load()
 		end 
 	end 
 end
+
+SAVE_ALL = 0
+SAVE_RESTRICIONS = 1 
+SAVE_LIMITS = 2 
+SAVE_LOADOUTS = 3
 
 function URS.Save(n)
 	if (n == SAVE_ALL or n == SAVE_RESTRICTIONS) 	and URS.restrictions then file.Write("ulx/restrictions.txt", util.TableToJSON(URS.restrictions)) end
@@ -107,7 +107,7 @@ end
 hook.Add( "PlayerSpawnProp", "URSCheckRestrictedProp", URS.CheckRestrictedProp, -10 )
 
 function URS.CheckRestrictedTool(ply, tr, tool)
-	if !URS.Check( ply, "tool", tool ) then return false end
+	if URS.Check( ply, "tool", tool ) == false then return false end
 	if URS.cfg.echoSpawns and tool != "inflator" then
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> used the tool ".. tool .." on ".. tr.Entity:GetModel() )
 	end
@@ -130,7 +130,7 @@ end
 hook.Add( "PlayerSpawnRagdoll", "URSCheckRestrictedRagdoll", URS.CheckRestrictedRagdoll, -10 )
 
 function URS.CheckRestrictedSWEP(ply, class, weapon)
-	if !URS.Check( ply, "swep", class ) then return false end
+	if URS.Check( ply, "swep", class ) == false then return false end
 	if URS.cfg.echoSpawns then 
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave himself swep ".. class ) 
 	end 
