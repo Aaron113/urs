@@ -30,6 +30,7 @@ function URS.Save(n)
 end
 
 function URS.PrintRestricted(ply, type, what) 
+	if type == "pickup" then return end -- Constant spam
 	if URS.cfg.echoSpawns then 
 		ulx.logSpawn(ply:Nick() .."<".. ply:SteamID() .."> spawned/used ".. type .." ".. what .." -=RESTRICTED=-")
 	end 
@@ -140,11 +141,11 @@ hook.Add( "PlayerGiveSWEP", "URSCheckRestrictedSWEP2", URS.CheckRestrictedSWEP, 
 
 function URS.CheckRestrictedPickUp(ply, weapon)
 	if URS.cfg.weaponPickups:GetInt() == 2 then
-		if !URS.Check( ply, "pickup", weapon:GetClass()) then 
+		if URS.Check( ply, "pickup", weapon:GetClass(), true) == false then 
 			return false 
 		end 
 	elseif URS.cfg.weaponPickups:GetInt() == 1 then
-		if !URS.Check( ply, "swep", weapon:GetClass()) then 
+		if URS.Check( ply, "swep", weapon:GetClass()) == false then 
 			return false 
 		end 
 	end
