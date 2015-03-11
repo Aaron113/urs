@@ -31,7 +31,7 @@ end
 
 function URS.PrintRestricted(ply, type, what) 
 	if type == "pickup" then return end -- Constant spam
-	if URS.cfg.echoSpawns then 
+	if URS.cfg.echoSpawns:GetBool() then 
 		ulx.logSpawn(ply:Nick() .."<".. ply:SteamID() .."> spawned/used ".. type .." ".. what .." -=RESTRICTED=-")
 	end 
 	ULib.tsayError(ply, "\"".. what .."\" is a restricted ".. type .." from your rank.")
@@ -69,7 +69,9 @@ function URS.Check(ply, type, what)
 				return false 
 			end 
 		end 
-		return true -- Overwrite sbox limit (ours is greater)
+		if URS.cfg.overwriteSbox:GetBool() then 
+			return true -- Overwrite sbox limit (ours is greater) 
+		end 
 	end 
 end
 
@@ -109,7 +111,7 @@ hook.Add( "PlayerSpawnProp", "URSCheckRestrictedProp", URS.CheckRestrictedProp, 
 
 function URS.CheckRestrictedTool(ply, tr, tool)
 	if URS.Check( ply, "tool", tool ) == false then return false end
-	if URS.cfg.echoSpawns and tool != "inflator" then
+	if URS.cfg.echoSpawns:GetBool() and tool != "inflator" then
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> used the tool ".. tool .." on ".. tr.Entity:GetModel() )
 	end
 end
@@ -132,7 +134,7 @@ hook.Add( "PlayerSpawnRagdoll", "URSCheckRestrictedRagdoll", URS.CheckRestricted
 
 function URS.CheckRestrictedSWEP(ply, class, weapon)
 	if URS.Check( ply, "swep", class ) == false then return false end
-	if URS.cfg.echoSpawns then 
+	if URS.cfg.echoSpawns:GetBool() then 
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave himself swep ".. class ) 
 	end 
 end

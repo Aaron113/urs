@@ -9,14 +9,12 @@ URS.limits = {}
 URS.loadouts = {}
 
 URS.cfg = {}
-URS.cfg.weaponPickups = 0
-URS.cfg.echoSpawns = 0
-URS.cfg.echoCommands = 0
 
 if SERVER then 
 	URS.cfg.weaponPickups = ulx.convar("urs_weaponpickups", 2)
 	URS.cfg.echoSpawns = ulx.convar("urs_echo_spawns", 1)
 	URS.cfg.echoCommands = ulx.convar("urs_echo_commands", 1)
+	URS.cfg.overwriteSbox = ulx.convar("urs_overwrite_sbox", 1)
 
 	URS.Load()
 end 
