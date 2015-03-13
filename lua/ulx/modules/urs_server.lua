@@ -3,19 +3,34 @@ AddCSLuaFile( "ulx/modules/sh/urs_cmds.lua" )
 if !URS then URS = {} end 
 
 function URS.Load() 
+	URS.restricions = {} 
+	URS.limits = {}
+	URS.loadouts = {} 
+
+
 	if file.Exists( "ulx/restrictions.txt", "DATA" ) then URS.restrictions = util.JSONToTable( file.Read( "ulx/restrictions.txt", "DATA" ) ) end
 	if file.Exists( "ulx/limits.txt", "DATA" ) then URS.limits = util.JSONToTable( file.Read( "ulx/limits.txt", "DATA" ) ) end
 	if file.Exists( "ulx/loadouts.txt", "DATA" ) then URS.loadouts = util.JSONToTable( file.Read( "ulx/loadouts.txt", "DATA" ) ) end
 
 	-- Initiallize all tables to prevent errors
 	for type, types in pairs(URS.types) do 
+		print(type)
 		if !URS[type] then 
 			URS[type] = {} 
-			for k, v in pairs(types) do 
+			print(types)
+		end 
+
+		for k, v in pairs(types) do 
+			if !URS[type][v] then 
 				URS[type][v] = {} 
 			end 
 		end 
 	end 
+
+
+	-- xgui.sendDataTable({}, "URSRestrictions")
+	-- xgui.sendDataTable({}, "URSLimits")
+	-- xgui.sendDataTable({}, "URSLoadouts")
 end
 
 SAVE_ALL = 0
@@ -40,7 +55,12 @@ end
 function URS.Check(ply, type, what)
 	what = string.lower(what) 
 	local group = ply:GetUserGroup() 
-	local restriction = URS.restrictions[type][what] 
+	local restriction = false
+
+
+	if URS.restrictions[type] and URS.restrictions[type][what] then 
+		restriction = URS.restrictions[type][what] 
+	end 
 
 	if restriction then 
 		if table.HasValue(restriction, "*") then 
@@ -53,11 +73,11 @@ function URS.Check(ply, type, what)
 			return false 
 		end 
 
-	elseif URS.restrictions["all"][type] and table.HasValue(URS.restrictions["all"][type], group) then 
+	elseif URS.restrictions["all"] and URS.restrictions["all"][type] and table.HasValue(URS.restrictions["all"][type], group) then 
 		ULib.tsayError(ply, "Your rank is restricted from all ".. type .."s") 
 		return false 
 
-	elseif table.HasValue(URS.types.limits, type) and (URS.limits[type][ply:SteamID()] or URS.limits[type][group]) then 
+	elseif table.HasValue(URS.types.limits, type) and URS.limits[type] and (URS.limits[type][ply:SteamID()] or URS.limits[type][group]) then 
 		if URS.limits[type][ply:SteamID()] then 
 			if ply:GetCount(type.."s") >= URS.limits[type][ply:SteamID()] then 
 				ply:LimitHit( type .."s" )

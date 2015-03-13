@@ -3,6 +3,7 @@ if !URS then URS = {} end
 URS.types = {} 
 URS.types.restrictions = {"tool","vehicle","effect","swep", "npc","ragdoll","prop","sent", "all", "advdupe", "pickup"}
 URS.types.limits = {"vehicle","effect", "npc","ragdoll","prop","sent"}
+URS.types.loadouts = {}
 
 URS.restrictions = {}
 URS.limits = {}
