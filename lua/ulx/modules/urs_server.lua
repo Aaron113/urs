@@ -2,7 +2,7 @@ AddCSLuaFile( "ulx/modules/sh/urs_cmds.lua" )
 
 if !URS then URS = {} end 
 
-HOOK_NORAML = HOOK_NORMAL or 0 -- ensure we don't break on old version of ULIb
+HOOK_LOW = HOOK_LOW or 1 -- ensure we don't break on old versions of ULib
 
 function URS.Load() 
 	URS.restricions = {} 
@@ -26,22 +26,17 @@ function URS.Load()
 			end 
 		end 
 	end 
-
-
-	-- xgui.sendDataTable({}, "URSRestrictions")
-	-- xgui.sendDataTable({}, "URSLimits")
-	-- xgui.sendDataTable({}, "URSLoadouts")
 end
 
-SAVE_ALL = 0
-SAVE_RESTRICIONS = 1 
-SAVE_LIMITS = 2 
-SAVE_LOADOUTS = 3
+URS_SAVE_ALL = 0
+URS_SAVE_RESTRICIONS = 1 
+URS_SAVE_LIMITS = 2 
+URS_SAVE_LOADOUTS = 3
 
 function URS.Save(n)
-	if (n == SAVE_ALL or n == SAVE_RESTRICTIONS) 	and URS.restrictions then file.Write("ulx/restrictions.txt", util.TableToJSON(URS.restrictions)) end
-	if (n == SAVE_ALL or n == SAVE_LIMITS) 			and URS.limits then file.Write("ulx/limits.txt", util.TableToJSON(URS.limits)) end
-	if (n == SAVE_ALL or n == SAVE_LOADOUTS) 		and URS.loadouts then file.Write("ulx/loadouts.txt", util.TableToJSON(URS.loadouts)) end
+	if (n == URS_SAVE_ALL or n == URS_SAVE_RESTRICTIONS) 	and URS.restrictions then file.Write("ulx/restrictions.txt", util.TableToJSON(URS.restrictions)) end
+	if (n == URS_SAVE_ALL or n == URS_SAVE_LIMITS) 			and URS.limits then file.Write("ulx/limits.txt", util.TableToJSON(URS.limits)) end
+	if (n == URS_SAVE_ALL or n == URS_SAVE_LOADOUTS) 		and URS.loadouts then file.Write("ulx/loadouts.txt", util.TableToJSON(URS.loadouts)) end
 end
 
 function URS.PrintRestricted(ply, type, what) 
@@ -121,12 +116,12 @@ end )
 function URS.CheckRestrictedSENT(ply, sent)
 	return URS.Check( ply, "sent", sent )
 end
-hook.Add( "PlayerSpawnSENT", "URSCheckRestrictedSENT", URS.CheckRestrictedSENT, HOOK_NORMAL )
+hook.Add( "PlayerSpawnSENT", "URSCheckRestrictedSENT", URS.CheckRestrictedSENT, HOOK_LOW )
 
 function URS.CheckRestrictedProp(ply, mdl)
 	return URS.Check( ply, "prop", mdl )
 end
-hook.Add( "PlayerSpawnProp", "URSCheckRestrictedProp", URS.CheckRestrictedProp, HOOK_NORMAL )
+hook.Add( "PlayerSpawnProp", "URSCheckRestrictedProp", URS.CheckRestrictedProp, HOOK_LOW )
 
 function URS.CheckRestrictedTool(ply, tr, tool)
 	if URS.Check( ply, "tool", tool ) == false then return false end
@@ -134,22 +129,22 @@ function URS.CheckRestrictedTool(ply, tr, tool)
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> used the tool ".. tool .." on ".. tr.Entity:GetModel() )
 	end
 end
-hook.Add( "CanTool", "URSCheckRestrictedTool", URS.CheckRestrictedTool, HOOK_NORMAL )
+hook.Add( "CanTool", "URSCheckRestrictedTool", URS.CheckRestrictedTool, HOOK_LOW )
 
 function URS.CheckRestrictedEffect(ply, mdl)
 	return URS.Check( ply, "effect", mdl )
 end
-hook.Add( "PlayerSpawnEffect", "URSCheckRestrictedEffect", URS.CheckRestrictedEffect, HOOK_NORMAL )
+hook.Add( "PlayerSpawnEffect", "URSCheckRestrictedEffect", URS.CheckRestrictedEffect, HOOK_LOW )
 
 function URS.CheckRestrictedNPC(ply, npc, weapon)
 	return URS.Check( ply, "npc", npc )
 end
-hook.Add( "PlayerSpawnNPC", "URSCheckRestrictedNPC", URS.CheckRestrictedNPC, HOOK_NORMAL )
+hook.Add( "PlayerSpawnNPC", "URSCheckRestrictedNPC", URS.CheckRestrictedNPC, HOOK_LOW )
 
 function URS.CheckRestrictedRagdoll(ply, mdl)
 	return URS.Check( ply, "ragdoll", mdl )
 end
-hook.Add( "PlayerSpawnRagdoll", "URSCheckRestrictedRagdoll", URS.CheckRestrictedRagdoll, HOOK_NORMAL )
+hook.Add( "PlayerSpawnRagdoll", "URSCheckRestrictedRagdoll", URS.CheckRestrictedRagdoll, HOOK_LOW )
 
 function URS.CheckRestrictedSWEP(ply, class, weapon)
 	if URS.Check( ply, "swep", class ) == false then 
@@ -158,8 +153,8 @@ function URS.CheckRestrictedSWEP(ply, class, weapon)
 		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave himself swep ".. class ) 
 	end 
 end
-hook.Add( "PlayerSpawnSWEP", "URSCheckRestrictedSWEP", URS.CheckRestrictedSWEP, HOOK_NORMAL )
-hook.Add( "PlayerGiveSWEP", "URSCheckRestrictedSWEP2", URS.CheckRestrictedSWEP, HOOK_NORMAL )
+hook.Add( "PlayerSpawnSWEP", "URSCheckRestrictedSWEP", URS.CheckRestrictedSWEP, HOOK_LOW )
+hook.Add( "PlayerGiveSWEP", "URSCheckRestrictedSWEP2", URS.CheckRestrictedSWEP, HOOK_LOW )
 
 function URS.CheckRestrictedPickUp(ply, weapon)
 	if URS.cfg.weaponPickups:GetInt() == 2 then
@@ -172,12 +167,12 @@ function URS.CheckRestrictedPickUp(ply, weapon)
 		end 
 	end
 end
-hook.Add( "PlayerCanPickupWeapon", "URSCheckRestrictedPickUp", URS.CheckRestrictedPickUp, HOOK_NORMAL )
+hook.Add( "PlayerCanPickupWeapon", "URSCheckRestrictedPickUp", URS.CheckRestrictedPickUp, HOOK_LOW )
 
 function URS.CheckRestrictedVehicle(ply, mdl, name, vehicle_table)
 	return URS.Check( ply, "vehicle", mdl ) and URS.Check( ply, "vehicle", name )
 end
-hook.Add( "PlayerSpawnVehicle", "URSCheckRestrictedVehicle", URS.CheckRestrictedVehicle, HOOK_NORMAL )
+hook.Add( "PlayerSpawnVehicle", "URSCheckRestrictedVehicle", URS.CheckRestrictedVehicle, HOOK_LOW )
 
 function URS.CustomLoadouts(ply)
 	if URS.loadouts[ply:SteamID()] then
@@ -194,4 +189,4 @@ function URS.CustomLoadouts(ply)
 		return true
 	end
 end
-hook.Add( "PlayerLoadout", "URSCustomLoadouts", URS.CustomLoadouts, HOOK_NORMAL )
+hook.Add( "PlayerLoadout", "URSCustomLoadouts", URS.CustomLoadouts, HOOK_LOW )
