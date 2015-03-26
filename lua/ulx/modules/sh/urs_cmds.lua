@@ -46,7 +46,7 @@ function ulx.restrict( ply, type, what, ... )
 		end
 	end
 	xgui.sendDataTable({}, "URSRestrictions")
-	URS.Save(SAVE_RESTRICTIONS)
+	URS.Save(URS_SAVE_RESTRICTIONS)
 	table.sort(removers, function(a, b) return a > b end)
 	if removers[1] then for num, nums in pairs(removers) do table.remove(groups, nums) end end
 	if groups[1] then
@@ -93,7 +93,7 @@ function ulx.unrestrict( ply, type, what, ... )
 	end
 	table.sort( removers, function(a, b) return a > b end )
 	for i=1,#removers do table.remove( URS.restrictions[type][what], removers[i] ) end
-	URS.Save(SAVE_RESTRICTIONS)
+	URS.Save(URS_SAVE_RESTRICTIONS)
 	xgui.sendDataTable( {}, "URSRestrictions" )
 	if groups[1] then
 		table.sort( removers2, function(a, b) return a > b end )
@@ -115,7 +115,7 @@ unrestrict:help( "Remove a restrictions from a group." )
 function ulx.setlimit( ply, type, group, limit )
 	if limit == -1 then URS.limits[type][group] = nil else URS.limits[type][group] = limit end
 	xgui.sendDataTable( {}, "URSLimits" )
-	URS.Save(SAVE_LIMITS)
+	URS.Save(URS_SAVE_LIMITS)
 	ulx.fancyLogAdmin( ply, URS.cfg.echoCommands:GetBool(), "#A set the #s limit for #s to #i", type, group, limit )
 end
 local limit = ulx.command( "URS", "ulx setlimit", ulx.setlimit, "!setlimit" )
@@ -141,7 +141,7 @@ function ulx.loadoutadd( ply, group, ... )
 	if not URS.loadouts[group] then
 		URS.loadouts[group] = weapons
 	end
-	URS.Save(SAVE_LOADOUTS)
+	URS.Save(URS_SAVE_LOADOUTS)
 	xgui.sendDataTable( {}, "URSLoadouts" )
 	table.sort( removers, function(a, b) return a > b end )
 	for i=1,#removers do table.remove( weapons, removers[i] ) end
@@ -184,7 +184,7 @@ function ulx.loadoutremove( ply, group, ... )
 	table.sort( removers, function(a, b) return a > b end )
 	for i=1,#removers do table.remove( URS.loadouts[group], removers[i] ) end
 	if not URS.loadouts[group][1] then URS.loadouts[group] = nil end
-	URS.Save(SAVE_LOADOUTS)
+	URS.Save(URS_SAVE_LOADOUTS)
 	xgui.sendDataTable( {}, "URSLoadouts" )
 	table.sort( removers2, function(a, b) return a > b end )
 	for i=1,#removers2 do table.remove( weapons, removers2[i] ) end
