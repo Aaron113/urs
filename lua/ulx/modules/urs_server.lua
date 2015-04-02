@@ -66,11 +66,11 @@ function URS.Check(ply, type, what)
 			URS.PrintRestricted(ply, type, what) 
 			return false 
 		end 
-
-	elseif URS.restrictions["all"] and URS.restrictions["all"][type] and table.HasValue(URS.restrictions["all"][type], group) then 
+	end 
+	
+	if URS.restrictions["all"] and URS.restrictions["all"][type] and table.HasValue(URS.restrictions["all"][type], group) then 
 		ULib.tsayError(ply, "Your rank is restricted from all ".. type .."s") 
 		return false 
-
 	elseif table.HasValue(URS.types.limits, type) and URS.limits[type] and (URS.limits[type][ply:SteamID()] or URS.limits[type][group]) then 
 		if URS.limits[type][ply:SteamID()] then 
 			if ply:GetCount(type.."s") >= URS.limits[type][ply:SteamID()] then 
