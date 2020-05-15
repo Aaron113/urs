@@ -150,7 +150,7 @@ function URS.CheckRestrictedSWEP(ply, class, weapon)
 	if URS.Check( ply, "swep", class ) == false then 
 		return false 
 	elseif URS.cfg.echoSpawns:GetBool() then 
-		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave himself swep ".. class ) 
+		ulx.logSpawn( ply:Nick().."<".. ply:SteamID() .."> spawned/gave themself swep ".. class ) 
 	end 
 end
 hook.Add( "PlayerSpawnSWEP", "URSCheckRestrictedSWEP", URS.CheckRestrictedSWEP, HOOK_LOW )
